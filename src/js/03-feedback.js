@@ -1,34 +1,45 @@
 import throttle from 'lodash.throttle';
 
-const feedbackForm = document.querySelector('.feedback-form');
-const STOREGE_KEY = 'feedback-form-state';
-let msgObj = {};
+//const
+const STORAGE_KEY = 'feedback-form-state';
 
-feedbackForm.addEventListener('submit', hendlerSubmit);
-feedbackForm.addEventListener('input', throttle(hendlerInput, 500));
+//refs
+const form = document.querySelector('.feedback-form');
+const input = document.querySelector('[name="email"]');
+const textArea = document.querySelector('[name="message"]');
+const btn = document.querySelector('[type="submit"]');
 
-fieldValue();
+//liseners
+form.addEventListener('submit', onSubmit);
+form.addEventListener('input', throttle(onInputForm, 500));
 
-function hendlerSubmit(evt) {
-  evt.preventDefault();
-  evt.currentTarget.reset();
-  localStorage.removeItem(STOREGE_KEY);
-  msgObj = {};
-}
-function hendlerInput(evt) {
-  msgObj[evt.target.name] = evt.target.value;
-  localStorage.setItem(STOREGE_KEY, JSON.stringify(msgObj));
-}
+pushToinputs();
 
-function fieldValue() {
-  if (localStorage.getItem(STOREGE_KEY)) {
-    const obj = JSON.parse(localStorage.getItem(STOREGE_KEY));
-    feedbackForm.elements.email.value = obj[feedbackForm.elements.email.name];
-    msgObj[feedbackForm.elements.email.name] =
-      obj[feedbackForm.elements.email.name];
-    feedbackForm.elements.message.value =
-      obj[feedbackForm.elements.message.name];
-    msgObj[feedbackForm.elements.message.name] =
-      obj[feedbackForm.elements.message.name];
+const dataUser = { [input.name]: input.value, [textArea.name]: textArea.value };
+localStorage.setItem(STORAGE_KEY, JSON.stringify(dataUser));
+
+function onSubmit(event) {
+  event.preventDefault();
+  if (input.value === '' || textArea.value === '') {
+    return alert('Будь ласка, заповніть всі поля!');
   }
+  console.log(dataUser);
+  event.target.reset();
+  localStorage.removeItem(STORAGE_KEY);
+}
+
+function onInputForm(evt) {
+  dataUser[input.name] = input.value;
+  dataUser[textArea.name] = textArea.value;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(dataUser));
+}
+
+function pushToinputs() {
+  const savedMsg = localStorage.getItem(STORAGE_KEY);
+  const currentDatsUser = JSON.parse(savedMsg);
+  if (!currentDatsUser) {
+    return;
+  }
+  input.value = currentDatsUser.email;
+  textArea.value = currentDatsUser.message;
 }
